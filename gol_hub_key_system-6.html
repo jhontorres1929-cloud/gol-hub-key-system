@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOL HUB • Key System</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070a10;color:#fff;font-family:Arial,sans-serif}
+.card{width:min(92%,430px);padding:30px;background:#101621;border:1px solid #2498ff;border-radius:20px;text-align:center;box-shadow:0 0 35px #168cff33}
+.logo{font-size:38px;font-weight:800;color:#32a8ff}.sub{color:#aab5c5;margin:8px 0 28px}
+.timer{font-size:58px;font-weight:800;margin:18px}.bar{height:8px;background:#252e3b;border-radius:20px;overflow:hidden}.fill{height:100%;width:100%;background:#168cff;transition:width 1s linear}
+button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:11px;background:#168cff;color:#fff;font-weight:700;font-size:16px}
+button:disabled{opacity:.45}.key{display:none;margin-top:24px}.code{padding:16px;background:#070a10;border:1px solid #168cff;border-radius:10px;letter-spacing:2px;font-weight:700;word-break:break-all}.small{color:#9da8b8;font-size:13px;margin-top:12px}
+.notice{font-size:12px;color:#778397;margin-top:25px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">GOL HUB</div>
+  <div class="sub">KEY SYSTEM</div>
+  <div id="wait">
+    <div>Espera para generar tu KEY</div>
+    <div class="timer" id="timer">5:00</div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <button id="btn" disabled>ESPERA...</button>
+  </div>
+  <div class="key" id="keyBox">
+    <div class="code" id="key"></div>
+    <div class="small" id="expires"></div>
+    <button id="copy">COPIAR KEY</button>
+  </div>
+  <div class="notice">GOL HUB • Página de demostración</div>
+</div>
+<script>
+const total=300, lifetime=24*60*60*1000;
+let left=total;
+const timer=document.getElementById('timer'),fill=document.getElementById('fill'),btn=document.getElementById('btn');
+
+function tick(){
+  const m=Math.floor(left/60),s=String(left%60).padStart(2,'0');
+  timer.textContent=`${m}:${s}`;
+  fill.style.width=(left/total*100)+'%';
+  if(left<=0){btn.disabled=false;btn.textContent='GENERAR FREE KEY';return}
+  left--;setTimeout(tick,1000);
+}
+function part(n){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let x='';
+  for(let i=0;i<n;i++)x+=c[Math.floor(Math.random()*c.length)];
+  return x;
+}
+function generate(){
+  const key=`GOL-${part(4)}-${part(4)}-${part(4)}`;
+  const exp=Date.now()+lifetime;
+  document.getElementById('wait').style.display='none';
+  document.getElementById('keyBox').style.display='block';
+  document.getElementById('key').textContent=key;
+  function update(){
+    const r=exp-Date.now();
+    if(r<=0){document.getElementById('expires').textContent='KEY EXPIRADA';return}
+    const h=Math.floor(r/3600000),m=Math.floor(r%3600000/60000),s=Math.floor(r%60000/1000);
+    document.getElementById('expires').textContent=`Expira en ${h}h ${m}m ${s}s`;
+    setTimeout(update,1000);
+  }
+  update();
+  document.getElementById('copy').onclick=async()=>{
+    await navigator.clipboard.writeText(key);
+    document.getElementById('copy').textContent='✓ COPIADA';
+  };
+}
+btn.onclick=generate;
+tick();
+</script>
+</body>
+</html>
